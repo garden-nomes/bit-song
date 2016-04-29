@@ -82,12 +82,12 @@ def testbitcomposer(string, key):
 
 if __name__ == '__main__':
     from isobar import *
-    if (len(sys.argv) == 4):
+    if len(sys.argv) == 4:
         try:
             testbitcomposer(sys.argv[3], Key(sys.argv[1], sys.argv[2]))
         except KeyError:
             print("Error: unknown key")
-    elif (len(sys.argv) == 2):
+    elif len(sys.argv) == 2:
         testbitcomposer(sys.argv[1], Key.random())
     else:
         print("Usage: %s [tonic scale] string" % sys.argv[0])
