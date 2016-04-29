@@ -72,22 +72,23 @@ class BitMelody(Pattern):
         return {'note': self.key[self.key_index], 'dur': length, 'amp': 127}
 
 
-def testbitcomposer(string, key):
-    bc = BitMelody(string, key)
-    timeline = Timeline(84)
-    timeline.sched(bc)
-    timeline.run()
-    print
-
 
 if __name__ == '__main__':
     from isobar import *
+
+    def runbitcomposer(string, key=None):
+        bc = BitMelody(string, key)
+        timeline = Timeline(84)
+        timeline.sched(bc)
+        timeline.run()
+        print
+
     if (len(sys.argv) == 4):
         try:
             testbitcomposer(sys.argv[3], Key(sys.argv[1], sys.argv[2]))
         except KeyError:
             print("Error: unknown key")
     elif (len(sys.argv) == 2):
-        testbitcomposer(sys.argv[1], Key.random())
+        runbitcomposer(sys.argv[1])
     else:
         print("Usage: %s [tonic scale] string" % sys.argv[0])
