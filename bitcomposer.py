@@ -5,55 +5,92 @@ from isobar.key import Key
 from isobar.pattern.core import Pattern
 
 
-class BitMelody(Pattern):
-    """Composes music based on the bitwise representation of a string
-    """
+class BitFeeder(object):
+    '''Feed it strings, and it will pop out a string of bits from the utf-8
+    encoding of that string.
 
-    def __init__(self, string, key=None):
-        self.bits = bitarray.bitarray()
-        self.bits.frombytes(string)
+    Supports iterator interface
+    '''
 
-        self.key = key if key else Key.random()
-        self.octave = len(self.key.scale.semitones)
-        self.lowerbound = self.octave * 4
-        self.upperbound = self.octave * 8
+    def __init__(self, string=None):
+        self._ba = bytearray()
+        self._current_byte = b''
+        self._byte_i = 0    # index in byte array
+        self._bit_i = 0     # index in current bit
 
-        # print('%s: %s to %s'
-                # % (str(self.key),
-                   # str(Note(self.key[self.lowerbound])),
-                   # str(Note(self.key[self.upperbound]))))
-
-        self.reset()
+        if string:
+            self.feed(string)
 
     def __iter__(self):
         return self
 
-    def reset(self):
-        self.key_index = self.octave * 4
-        self.index = 0
+    def next(self):
+        if self._bit_i == 0:
+            self._load_next_byte()
+            print   # DEBUG
+        bit = self._current_byte[self._bit_i]
+
+        self._bit_i += 1
+        if self._bit_i >= len(self._current_byte):
+            self._byte_i += 1
+            self._bit_i = 0
+
+        return bit
+
+    def _load_next_byte(self):
+        try:
+            self._current_byte = format(self._ba[self._byte_i], '08b')
+        except IndexError:
+            raise StopIteration
+
+    def feed(self, string):
+        self._ba += bytearray(string, 'utf-8')
+        if self._current_byte == b'':
+            self._load_next_byte()
+
+
+class BitComposer(Pattern):
+    '''Composes music based on the bitwise representation of a string
+    '''
+
+    def __init__(self, string, key=None):
+        # create bit array
+        self.bits = bitarray.bitarray()
+        self.bits.frombytes(bytes(string))
+        self.bit_index = 0
+
+        # create key scale range
+        self.key = key if key else Key.random()
+        self.octave = len(self.key.scale.semitones)
+        self.lowerbound = self.octave * 3
+        self.upperbound = self.octave * 8
+        self.key_index = self.octave * 5
+
+    def __iter__(self):
+        return self
 
     def append(self, string):
         self.bits.frombytes(string)
 
     def bitregion(self, value):
-        """Return number of consecutive 0's or 1's from the current index
-        """
+        '''Return number of consecutive 0's or 1's from the current index
+        '''
         count = 0
         try:
-            while self.bits[self.index] == value:
+            while self.bits[self.bit_index] == value:
                 count += 1
-                self.index += 1
+                self.bit_index += 1
         except IndexError:
-            sys.stdout.write('\r' + self.bits[:self.index].tostring())
+            sys.stdout.write('\r' + self.bits[:self.bit_index].tostring())
             sys.stdout.flush()
             raise StopIteration
         return count
 
     def next(self):
-        """Compute next note from the string
-        """
+        '''Compute next note from the string
+        '''
         # move up/down scale based on consecutive 0's
-        if self.bits[self.index / 8]:
+        if self.bits[self.bit_index / 8]:
             self.key_index += self.bitregion(True)
         else:
             self.key_index -= self.bitregion(True)
@@ -66,18 +103,25 @@ class BitMelody(Pattern):
         # length of note based on consecutive 0's
         length = 1.0 / min(self.bitregion(False), 4)
 
-        # print('note: %s' % str(Note(self.key[self.key_index])))
-        sys.stdout.write('\r' + self.bits[:self.index].tostring())
+        x = self.bits[:self.bit_index].tobytes().decode('utf-8').find('\n')
+        if x != -1:
+            print('\r' + self.bits[:x].tobytes().decode('utf-8'))
+            self.bits = self.bits[x:]
+
+        sys.stdout.write('\r' +
+            self.bits[:self.bit_index]
+                .tobytes()
+                .decode('utf-8')
+        )
         sys.stdout.flush()
         return {'note': self.key[self.key_index], 'dur': length, 'amp': 127}
-
 
 
 if __name__ == '__main__':
     from isobar import *
 
     def runbitcomposer(string, key=None):
-        bc = BitMelody(string, key)
+        bc = BitComposer(string, key)
         timeline = Timeline(84)
         timeline.sched(bc)
         timeline.run()
