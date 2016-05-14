@@ -1,52 +1,11 @@
+#!/usr/bin/python2.7
+
 import sys
-import bitarray
+from feeders import BitFeeder
 from isobar.note import Note
+from isobar.scale import Scale
 from isobar.key import Key
 from isobar.pattern.core import Pattern
-
-
-class BitFeeder(object):
-    '''Feed it strings, and it will pop out a string of bits from the utf-8
-    encoding of that string.
-
-    Supports iterator interface
-    '''
-
-    def __init__(self, string=None):
-        self._ba = bytearray()
-        self._current_byte = b''
-        self._byte_i = 0    # index in byte array
-        self._bit_i = 0     # index in current bit
-
-        if string:
-            self.feed(string)
-
-    def __iter__(self):
-        return self
-
-    def next(self):
-        if self._bit_i == 0:
-            self._load_next_byte()
-            print   # DEBUG
-        bit = self._current_byte[self._bit_i]
-
-        self._bit_i += 1
-        if self._bit_i >= len(self._current_byte):
-            self._byte_i += 1
-            self._bit_i = 0
-
-        return bit
-
-    def _load_next_byte(self):
-        try:
-            self._current_byte = format(self._ba[self._byte_i], '08b')
-        except IndexError:
-            raise StopIteration
-
-    def feed(self, string):
-        self._ba += bytearray(string, 'utf-8')
-        if self._current_byte == b'':
-            self._load_next_byte()
 
 
 class BitComposer(Pattern):
@@ -54,13 +13,13 @@ class BitComposer(Pattern):
     '''
 
     def __init__(self, string, key=None):
-        # create bit array
-        self.bits = bitarray.bitarray()
-        self.bits.frombytes(bytes(string))
-        self.bit_index = 0
+        self._feeder = BitFeeder(string)
+        self.rhythm = []
 
-        # create key scale range
-        self.key = key if key else Key.random()
+        # generate key/scale range
+        tonic = self._get_int(4) % 12
+        scale = self._get_int(5) % len(Scale.all())
+        self.key = Key(tonic, Scale.all()[scale])
         self.octave = len(self.key.scale.semitones)
         self.lowerbound = self.octave * 3
         self.upperbound = self.octave * 8
@@ -69,52 +28,59 @@ class BitComposer(Pattern):
     def __iter__(self):
         return self
 
-    def append(self, string):
-        self.bits.frombytes(string)
-
-    def bitregion(self, value):
-        '''Return number of consecutive 0's or 1's from the current index
-        '''
-        count = 0
-        try:
-            while self.bits[self.bit_index] == value:
-                count += 1
-                self.bit_index += 1
-        except IndexError:
-            sys.stdout.write('\r' + self.bits[:self.bit_index].tostring())
-            sys.stdout.flush()
-            raise StopIteration
-        return count
-
     def next(self):
         '''Compute next note from the string
         '''
-        # move up/down scale based on consecutive 0's
-        if self.bits[self.bit_index / 8]:
-            self.key_index += self.bitregion(True)
-        else:
-            self.key_index -= self.bitregion(True)
+
+        if not self.rhythm:
+            # compute the next measure's rhythm
+            self._build_rhythm()
+
+        # get the length of the next note
+        length = 4.0 / self.rhythm[0]
+        self.rhythm = self.rhythm[1:]
+
+        # shift the key index by a 4-bit signed integer
+        self.key_index += self._get_int(4, True)
+
         # clamp key index to predefined range by moving up/down octave
         if self.key_index < self.lowerbound:
             self.key_index += self.octave
         if self.key_index > self.upperbound:
             self.key_index -= self.octave
 
-        # length of note based on consecutive 0's
-        length = 1.0 / min(self.bitregion(False), 4)
+        note = {
+            'note': self.key[self.key_index],
+            'dur':  length,
+            'amp': 127
+        }
+        return note
 
-        x = self.bits[:self.bit_index].tobytes().decode('utf-8').find('\n')
-        if x != -1:
-            print('\r' + self.bits[:x].tobytes().decode('utf-8'))
-            self.bits = self.bits[x:]
+    def feed(self, string):
+        self._feeder.feed(string)
 
-        sys.stdout.write('\r' +
-            self.bits[:self.bit_index]
-                .tobytes()
-                .decode('utf-8')
-        )
-        sys.stdout.flush()
-        return {'note': self.key[self.key_index], 'dur': length, 'amp': 127}
+    def _build_rhythm(self):
+        self.rhythm = []
+        self._build_rhythm_recurse(1)
+        return self.rhythm
+
+    def _build_rhythm_recurse(self, i):
+        if self._feeder.next() == '1' and i < 16:
+            self._build_rhythm_recurse(i * 2)
+            self._build_rhythm_recurse(i * 2)
+        else:
+            self.rhythm.append(i)
+
+    def _get_int(self, bits, signed=False):
+        chunk = [self._feeder.next() for i in range(bits)]
+        neg = 1
+        if signed:
+            if chunk[0]: neg = -1
+            chunk = chunk[1:]
+
+        val = int(''.join(chunk), 2)
+        val *= neg
+        return val
 
 
 if __name__ == '__main__':
@@ -127,12 +93,7 @@ if __name__ == '__main__':
         timeline.run()
         print
 
-    if len(sys.argv) == 4:
-        try:
-            testbitcomposer(sys.argv[3], Key(sys.argv[1], sys.argv[2]))
-        except KeyError:
-            print("Error: unknown key")
-    elif len(sys.argv) == 2:
+    if len(sys.argv) == 2:
         runbitcomposer(sys.argv[1])
     else:
-        print("Usage: %s [tonic scale] string" % sys.argv[0])
+        print("Usage: %s string" % sys.argv[0])
