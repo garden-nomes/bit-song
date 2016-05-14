@@ -1,4 +1,5 @@
-#!/usr/bin/python2.7
+#!/usr/bin/env python
+
 
 import sys
 from feeders import BitFeeder
@@ -12,7 +13,7 @@ class BitComposer(Pattern):
     '''Composes music based on the bitwise representation of a string
     '''
 
-    def __init__(self, string, key=None):
+    def __init__(self, string=None, key=None):
         self._feeder = BitFeeder(string)
         self.rhythm = []
 
@@ -83,17 +84,30 @@ class BitComposer(Pattern):
         return val
 
 
+def main():
+    if len(sys.argv) == 2:
+        bc = BitComposer(sys.argv[1])
+        start_timeline(bc)
+    else:
+        running = False
+        for line in sys.stdin:
+            if not running:
+                bc = BitComposer(line)
+                start_timeline(bc)
+            else:
+                bc.feed(line)
+
+
+def start_timeline(bc):
+    timeline = Timeline(84)
+    timeline.sched(bc)
+    timeline.run()
+
+
+def usage():
+        print("Usage: %s [string]" % sys.argv[0])
+
+
 if __name__ == '__main__':
     from isobar import *
-
-    def runbitcomposer(string, key=None):
-        bc = BitComposer(string, key)
-        timeline = Timeline(84)
-        timeline.sched(bc)
-        timeline.run()
-        print
-
-    if len(sys.argv) == 2:
-        runbitcomposer(sys.argv[1])
-    else:
-        print("Usage: %s string" % sys.argv[0])
+    main()

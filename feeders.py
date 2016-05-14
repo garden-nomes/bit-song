@@ -1,5 +1,6 @@
 import sys
 
+
 class BitFeeder(object):
     '''Feed it strings, and it will pop out a string of bits from the utf-8
     encoding of that string.
@@ -21,8 +22,6 @@ class BitFeeder(object):
 
         bit = self._current_byte[0]
         self._current_byte = self._current_byte[1:]
-        # sys.stdout.write(bit)
-        # sys.stdout.flush()
 
         return bit
 
