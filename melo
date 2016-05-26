@@ -1,0 +1,45 @@
+#!/usr/bin/env python
+# TODO: come up w/ better name
+
+
+import argparse
+from bitcomposer import BitComposer
+from isobar import *
+from isobar.io.midifile import MidiFileOut
+
+
+description =   'Serialize data from a file or stdin into a MIDI melody.'
+version =       '%(prog)s 0.01'
+
+
+def main():
+    parser = argparse.ArgumentParser(description=description)
+
+    # set up arguments
+    parser.add_argument('--version', '-v', action='version', version=version,
+            help='display version info')
+    parser.add_argument('infile', nargs='?',
+            type=argparse.FileType('r'), default=sys.stdin,
+            help='file to read raw data from (optional, default stdin)')
+    parser.add_argument('-o', metavar='outfile', dest='outfile',
+            help='file to write MIDI data to when --real-time not set')
+    parser.add_argument('-m', '--midi-device', default=None,
+            help='specify device to send MIDI data to in conjunction with --realtime')
+    parser.add_argument('-b', '--bpm', type=int, default=120,
+            help='bpm to play melody at')
+
+    args = parser.parse_args()
+
+    bitcomposer = BitComposer(args.infile.read())
+
+    if args.outfile:
+        timeline = Timeline(args.bpm, MidiFileOut(args.outfile))
+    else:
+        timeline = Timeline(args.bpm)
+
+    timeline.sched(bitcomposer)
+    timeline.run()
+
+
+if __name__ == '__main__':
+    main()

@@ -1,3 +1,2 @@
-bitarray==0.8.1
 isobar==0.0.1
 python-rtmidi==0.5b1
