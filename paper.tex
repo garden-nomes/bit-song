@@ -1,0 +1,328 @@
+
+%%%%%%%%%%%%%%%%%%%%%%% file typeinst.tex %%%%%%%%%%%%%%%%%%%%%%%%%
+%
+% This is the LaTeX source for the instructions to authors using
+% the LaTeX document class 'llncs.cls' for contributions to
+% the Lecture Notes in Computer Sciences series.
+% http://www.springer.com/lncs       Springer Heidelberg 2006/05/04
+%
+% It may be used as a template for your own input - copy it
+% to a new file with a new name and use it as the basis
+% for your article.
+%
+% NB: the document class 'llncs' has its own and detailed documentation, see
+% ftp://ftp.springer.de/data/pubftp/pub/tex/latex/llncs/latex2e/llncsdoc.pdf
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+\documentclass[runningheads,a4paper]{llncs}
+
+\usepackage{amssymb}
+\setcounter{tocdepth}{3}
+\usepackage{graphicx}
+
+\usepackage{url}
+\urldef{\mailsa}\path|weinoa11@evergreen.edu|
+\newcommand{\keywords}[1]{\par\addvspace\baselineskip
+\noindent\keywordname\enspace\ignorespaces#1}
+
+\begin{document}
+
+\mainmatter  % start of an individual contribution
+
+% first the title is needed
+\title{MEDI\\
+MIDI Encoding of Data Inputs\\
+Transforming Raw Data Into Musical Melody}
+
+% a short form should be given in case it is too long for the running head
+\titlerunning{MEDI: MIDI Encoding of Data Inputs}
+
+% the name(s) of the author(s) follow(s) next
+%
+% NB: Chinese authors should write their first names(s) in front of
+% their surnames. This ensures that the names appear correctly in
+% the running heads and the author index.
+%
+\author{Noah Weiner}
+%
+\authorrunning{MEDI: MIDI Encoding of Data Inputs}
+% (feature abused for this document to repeat the title also on left hand pages)
+
+% the affiliations are given next; don't give your e-mail address
+% unless you accept that it will be published
+\institute{The Evergreen State College,\\
+Olympia, Washington\\
+\mailsa\\
+\url{http://ada.evergreen.edu/sos}}
+
+%
+% NB: a more complex sample for affiliations and the mapping to the
+% corresponding authors can be found in the file "llncs.dem"
+% (search for the string "\mainmatter" where a contribution starts).
+% "llncs.dem" accompanies the document class "llncs.cls".
+%
+
+\toctitle{MEDI}
+\tocauthor{MIDI Encoding of Data Inputs}
+\maketitle
+
+
+\begin{abstract}
+%The abstract should summarize the contents of the paper and should
+%contain at least 70 and at most 150 words. It should be written using the
+%\emph{abstract} environment.
+\keywords{Algorithmic Composition, MIDI, Music, Python}
+\end{abstract}
+
+
+\section{Introduction}
+
+MEDI is a program for transforming data into musical melodies. It is written in
+Python using the algorithmic composition library isobar. The point of this
+project was to investigate the nature of data and how it is interpreted. This
+included investigating algorithmic composition and natural language processing,
+two fields which attempt to use data to simulate the processes of the human
+brain.
+
+Section (1) (this section) gives an overview of the project and explains the layout
+of the paper. Section (2) relate the findings of the research undertaken into the
+fields of algorithmic composition and natural language processing, and explain
+how this research inspired MEDI. Section (3) will describe the usage and workings
+of MEDI, and section (4) will examine MEDI in relation to other existing works.
+Section (5) will conclude with a discussion of ways in which MEDI could be
+extended and improved in the future.
+
+%What does the project do? What was you main goal? Or what problem were you trying to solve? What were your learning objectives?
+
+%Give the organization of your paper here. In Section 1 (this section) we describe the organization of the paper. In Section 2 we give a detailed description of the project/the problem we are trying to solve. This can include a brief history, as well as the specifications for the project.  In Section 3 we describe what we accomplished. In Section 4 we critique our results, including a comparison with other systems/work in the area. In Section 5 we discuss our future work.
+
+
+\subsection{History/Background}
+
+The project began by conducting a survey of the current state of algorithmic
+composition. Computational algorithmic composition has been a topic of intense
+research since the 1950s \cite{edwards11}, and incorporates a vast array of
+topics including Markov chains, l-systems, fractals, neural networks, and
+machine learning \cite{nierhaus09}.
+
+Maurer \cite{maurer99} classifies techniques of algorithmic composition into
+three general approaches: stochastic, rule-based, and artificial intelligence.
+
+Stochastic approaches utilize randomness, and were used even before the advent
+of computing by composers like Mozart and John Cage. One example of stochastic
+approaches is Markov chains, although other
+approaches, which not considered inherently stochastic, may utilize
+non-determinism as well.
+
+Rule-based approaches include formal grammars, deterministic l-systems, cellular
+automata, and fractals. Music is generated using a defined set of rules. MEDI is
+an example of a rule-based approach.
+
+Artificial intelligence is similar to rule-based approaches except that AI systems
+seek to generate their own grammar. This includes neural networks, machine
+learning, and other algorithmic composition techniques.
+
+The original intention for this project was to combine one of these techniques
+with natural language processing in order to mine data from twitter, analyze it,
+and compose and perform music using parameters set by the analysis. However, the
+project took a detour and moved backwards in regards to natural language
+processing.
+
+Where natural language processing seeks to simulate a human brain in how it
+interprets written language data, this project seeks to interpret data as a
+machine does. This means examining how data (including written language, or pictures,
+or audio) is actually represented to the computer itself. Language is not a
+collection of words and sentences (to the computer), but instead a sequence of
+1's and 0's, which can be chunked into 8 digit bytes, which correspond to
+letters. The idea of designing a compositional algorithm that used individual bits as
+inputs came from that concept.
+
+\section{Specification of the Project}
+
+The original intentions was to synthesize audio from natural language inputs
+from mining Twitter. In its final form, the specification for the project was as
+follows:
+
+\begin{itemize}
+\item Given any input, the program should produce a melody that sounds
+subjectively "natural" as defined by the programmer. That is, it should sound
+like something that could plausibly have been composed by a human.
+
+\item The resultant melody should interpret that data deterministically and
+losslessly, so that the original data could theoretically be reconstructed given
+resultant melody.
+
+\item The program should be able to satisfy those requirements given ANY input.
+\end{itemize}
+
+%What was the project, what were the specifications. If you are doing a game, you would put the characteristics of the game, what guided your work (eg the rules? the graphics? the language? the platform(s)?) If this was a learning project, what did you hope to learn? What was significant about this problem to you? What criteria did you use to determine your "success"?
+
+\subsection{Use cases} %(If any) What specific functions does your project accomplish for its users?
+
+The project has no inherent function except as a kind of toy. However, the
+theoretical possibility of a decoder (see the specification) does allow for some
+potential uses. Stenography would be the most obvious one: data could be encoded
+into melodic form and embedded within a song or audio track. It could also be
+used as an aesthetically pleasing but incredibly inefficient communication
+protocol.
+
+\subsection{Implementation choices}
+
+Python was chosen for the project, as Python offers a large volume of community
+developed packages that would aid in rapid development. Looking in to music
+composition packages, one of the most fleshed out and relevant packages seemed
+to be isobar \cite{isobar}, a library developed to assist with a couple
+different generative music projects similar to the original intentions for the
+project. However, isobar proved difficult to work with since it had been
+developed for single use purpose, it was difficult to move to another platform.
+Things like MIDI device names were hard coded into the package. Future iterations
+of the project would likely drop isobar.
+
+%Details about your hardware and software choices (if you used pre-existing packages, for instance.) How you went about testing your project or what criteria you used in order to determine your outcomes.
+
+\subsection{Software Architecture} %How is the code itself organized into classes and/or functions.
+
+%It's good to have an example that puts your project in context. Examples will vary depending on your project.
+
+The code has three major components: a "bit feeder" and a "bit composer",
+interfaced with using a driver.
+
+The bit feeder is responsible for taking raw data of any kind and converting it
+into a FIFO queue of individual bits. It is implemented using Python's iterable
+interface. Given that the project is implemented in Python, however, it can't be
+guaranteed that the data given is precisely converted: Python will often convert
+strings to UTF-8 encodings, for example.
+
+The bit feeder uses a Python built-in data structure called a bytearray, which
+stores an array of bytes, and then stores the current byte as a string of UTF-8
+1's and 0's. When a bit is request, it dequeues the front of the string. If the
+string is empty, it dequeues the bytearray, and converts that byte into a string
+of 1's and 0's.
+
+The bit composer is the more interesting part. It also implements an iterable
+interface. It keeps an internal bit feeder object, which it uses to generate the
+pitch and duration of the next note when requested. The bit composer works like
+so:
+
+\begin{enumerate}
+\item When initialized with data, it reads "header" information like key and
+tonic from the data by grabbing 3- and 4-bit integers from the start of the
+data.
+
+\item A starting note is arbitrarily chosen. Currently, this is the tonic of the
+4th octave.
+
+\item Each cycle of the bit composer consists of one measure, and works like so:
+    \begin{enumerate}
+    \item A rhythmic pattern for the measure is generated by recursively
+    subdividing the measure based on the bit sequence.
+
+    \item For each note in the measure, the pitch is shifted by reading a 4-bit
+    signed integer and moving that many steps up or down the chosen scale.
+    \end{enumerate}
+\end{enumerate}
+
+The driver implements a GNU-styled command line interface, and ties the bit
+composer to isobar's timeline class, which generates MIDI events in real-time it
+is responsible for accepting input from either the command line or standard
+input.
+
+\subsection{Test Cases}
+
+Some examples of the output given by the program, transcribed into musical
+notation.
+
+\subsubsection{Example 1}
+
+From the input "hello world":
+
+\begin{lilypond}[quote,fragment,staffsize=26]
+    c'1
+    g'1
+    % F'4 C'16 G'16 G'8 Dis'8 Ais''16 G''16 Dis''4
+    % C''1
+    % Ais''1
+    % C'2 C8 Ais'8
+\end{lilypond}
+
+\subsubsection{Example 2}
+%Detail of example 2.
+%It's often good (if appropriate) to include figures for your examples.
+
+\subsubsection{Example 3}
+%Try to have varied examples or samples that demonstrate particular features of your
+%work that you identified in the specification section above.
+
+\subsection{Program Code}
+
+%If relevant you could include a short piece of program code that you use to demonstrate
+%some feature of your work.
+
+\section{Status}
+%What is currently working or not working on the project? To what extent does it do what you wanted it to do? If relevant you could compare what you accomplished to your original motivations and/or history of similar work.
+\section{Conclusions/Critique}
+
+%Identify both what succeeded (your positive results) and what didn't. If your work had a major shift in orientation you should have provided an indication earlier but you could discuss the consequences of that change here. Specify what design or programming issues you ran into and how you addressed them.
+%\begin{itemize}
+%\item To what extent did the final version of your project resemble your original design for the project (as described in your project proposal and project plan.)
+%\item Which parts of your project work went the way you expected them to? Which ones did not?
+%\item How did keeping minutes affect your group's work? How did it shape your experience of your project work.
+%\item If you were to do this project again, what would you do differently next time?
+%\end{itemize}
+
+\section{Future Work}
+%What did you learn and what future plans do you have for this work. Or if you have no specific plans to continue the project, how the learning you accomplished here will inform your future studies/work.
+
+
+\section{The References Section}\label{references}
+
+%Put your references here. Use standard format (eg look at what follows).
+
+\begin{thebibliography}{4}
+
+%\bibitem{jour} Smith, T.F., Waterman, M.S.: Identification of Common Molecular
+%Subsequences. J. Mol. Biol. 147, 195--197 (1981)
+
+%\bibitem{lncschap} May, P., Ehrlich, H.C., Steinke, T.: ZIB Structure Prediction Pipeline:
+%Composing a Complex Biological Workflow through Web Services. In: Nagel,
+%W.E., Walter, W.V., Lehner, W. (eds.) Euro-Par 2006. LNCS, vol. 4128,
+%pp. 1148--1158. Springer, Heidelberg (2006)
+
+%\bibitem{book} Foster, I., Kesselman, C.: The Grid: Blueprint for a New Computing
+%Infrastructure. Morgan Kaufmann, San Francisco (1999)
+
+%\bibitem{proceeding1} Czajkowski, K., Fitzgerald, S., Foster, I., Kesselman, C.: Grid
+%Information Services for Distributed Resource Sharing. In: 10th IEEE
+%International Symposium on High Performance Distributed Computing, pp.
+%181--184. IEEE Press, New York (2001)
+
+%\bibitem{proceeding2} Foster, I., Kesselman, C., Nick, J., Tuecke, S.: The Physiology of the
+%Grid: an Open Grid Services Architecture for Distributed Systems
+%Integration. Technical report, Global Grid Forum (2002)
+
+%\bibitem{url} National Center for Biotechnology Information, \url{http://www.ncbi.nlm.nih.gov}
+
+\end{thebibliography}
+
+
+%\subsubsection*{Acknowledgments.}  We received valuable help from XYZ.
+
+%\section{Checklist of Items to be Sent to Sherri/Judy}
+%Here is a checklist of everything the volume editor requires from you:
+
+
+%\begin{itemize}
+%\settowidth{\leftmargin}{{\Large$\square$}}\advance\leftmargin\labelsep
+%\itemsep8pt\relax
+%\renewcommand\labelitemi{{\lower1.5pt\hbox{\Large$\square$}}}
+%\item The full (but concise) explanation of what each individual's role in the project was and what that individual did.
+%\item The final \LaTeX{} source files
+%\item A final PDF file
+%\item A copyright form, signed by one author on behalf of all of the
+%authors of the paper.
+%\item A readme giving the name and email address of the
+%corresponding author.
+%\end{itemize}
+\end{document}
