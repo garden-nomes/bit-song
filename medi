@@ -9,7 +9,7 @@ from isobar.io.midifile import MidiFileOut
 
 
 description =   'Serialize data from a file or stdin into a MIDI melody.'
-version =       '%(prog)s 0.01'
+version =       '%(prog)s 0.01 unreleased development alpha'
 
 
 def main():
@@ -39,6 +39,7 @@ def main():
 
     timeline.sched(bitcomposer)
     timeline.run()
+    print()
 
 
 if __name__ == '__main__':
