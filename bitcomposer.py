@@ -1,6 +1,33 @@
 from isobar.pattern import Pattern
 from isobar.key import Key
 from isobar.scale import Scale
+from isobar.util import miditoname
+import re
+import sys
+
+
+def note_to_lilypond(note):
+    '''Convert a note to lilpond notation (e.g. c'4)
+    '''
+    # split a note name like 'C4' into ['C', '4']
+    match = re.match(
+            r'([a-z]+)([0-9]+)',
+            miditoname(note['note']).replace('#', 'is').replace('b', 'es'),
+            re.I
+    )
+
+    if match:
+        ret = match.groups()[0]
+        octave_num = int(match.groups()[1]) - 4;
+        if octave_num > 0:
+            ret += '\'' * octave_num
+        else:
+            ret += ',' * (octave_num * -1)
+
+        ret += str(int(4.0 / note['dur']))
+        return ret
+    else:
+        return ''
 
 
 class BitFeeder(object):
@@ -53,9 +80,11 @@ class BitComposer(Pattern):
         scale = self._get_int(4)
         self._key = Key(tonic, Scale.all()[scale])
         self._octave = len(self._key.scale.semitones)
-        self._lowerbound = self._octave * 3
+        self._lowerbound = self._octave * 4
         self._upperbound = self._octave * 8
-        self._key_index = self._octave * 5
+        self._key_index = self._octave * 6
+
+        print str(self._key)
 
     def next(self):
         '''Compute next note from the string
@@ -64,11 +93,8 @@ class BitComposer(Pattern):
         try:
             if not self._rhythm:
                 # compute the next measure's rhythm
+                sys.stdout.write('\n')
                 self._build_rhythm()
-
-            # get the length of the next note
-            length = 4.0 / self._rhythm[0]
-            self._rhythm = self._rhythm[1:]
 
             # shift the key index by a 4-bit signed integer
             self._key_index += self._get_int(4, True)
@@ -81,10 +107,15 @@ class BitComposer(Pattern):
 
             note = {
                 'note': self._key[self._key_index],
-                'dur':  length,
+                'dur':  self._rhythm[0],
                 'amp': 127
             }
+
+            sys.stdout.write(note_to_lilypond(note) + ' ')
+            self._rhythm = self._rhythm[1:]
+
         except StopIteration:
+            # uncomment in order to sustain program after it runs out of data
             # note = {
                 # 'note': 0,
                 # 'dur': 1,
@@ -114,7 +145,7 @@ class BitComposer(Pattern):
             self._build_rhythm_recurse(i * 2)
             self._build_rhythm_recurse(i * 2)
         else:
-            self._rhythm.append(i)
+            self._rhythm.append(4.0 / i)
 
     def _get_int(self, bits, signed=False):
         '''Return a signed or unsigned integer of <bits> length from the bit
